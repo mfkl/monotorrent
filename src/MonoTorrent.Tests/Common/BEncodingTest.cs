@@ -213,6 +213,14 @@ namespace MonoTorrent.Common
         }
 
         [Test]
+        public void benNumber_MaxMin ([Values (long.MinValue, long.MaxValue)] long value)
+        {
+            var number = new BEncodedNumber (value);
+            var result = BEncodedValue.Decode<BEncodedNumber> (number.Encode ());
+            Assert.AreEqual (result.Number, value);
+        }
+
+        [Test]
         public void benNumberEncodingBuffered ()
         {
             byte[] data = Encoding.UTF8.GetBytes ("i12345e");
