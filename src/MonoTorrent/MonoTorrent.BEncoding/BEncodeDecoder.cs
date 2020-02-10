@@ -25,10 +25,9 @@ namespace MonoTorrent.BEncoding
 
             int read;
             while ((read = reader.ReadByte ()) != -1 && read != 'e') {
-                key = (BEncodedString) Decode (reader);         // keys have to be BEncoded strings
+                key = (BEncodedString) Decode (reader, read);         // keys have to be BEncoded strings
 
-                read = reader.ReadByte ();
-                if (read == 'd') {
+                if ((read = reader.ReadByte ()) == 'd') {
                     value = DecodeDictionary (reader, key == InfoKey);
                 } else
                     value = Decode (reader, read);                     // the value is a BEncoded value
@@ -36,7 +35,7 @@ namespace MonoTorrent.BEncoding
                 torrent.Add (key, value);
             }
 
-            if (reader.ReadByte () != 'e')                                    // remove the trailing 'e'
+            if (read != 'e')                                    // remove the trailing 'e'
                 throw new BEncodingException ("Invalid data found. Aborting");
 
             return torrent;

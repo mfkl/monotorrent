@@ -399,8 +399,6 @@ namespace MonoTorrent.Common
         }
         #endregion
 
-
-        #region General Tests
         [Test]
         public void corruptBenDataDecode ()
         {
@@ -409,6 +407,38 @@ namespace MonoTorrent.Common
                 BEncodedValue.Decode (Encoding.UTF8.GetBytes (testString));
             });
         }
-        #endregion
+
+        [Test]
+        public void DecodeTorrentWithDict ()
+        {
+            var dict = new BEncodedDictionary ();
+            dict.Add ("other", new BEncodedDictionary { { (BEncodedString) "test", (BEncodedString) "value" } });
+
+            var result = BEncodedDictionary.DecodeTorrent (dict.Encode ());
+            Assert.IsTrue (Toolbox.ByteMatch (dict.Encode (), result.Encode ()));
+        }
+
+        [Test]
+        public void DecodeTorrentWithInfo ()
+        {
+            var dict = new BEncodedDictionary ();
+            dict.Add ("info", new BEncodedDictionary { { (BEncodedString) "test", (BEncodedString) "value" } });
+
+            var result = BEncodedDictionary.DecodeTorrent (dict.Encode ());
+            Assert.IsTrue (Toolbox.ByteMatch (dict.Encode (), result.Encode ()));
+        }
+
+
+        [Test]
+        public void DecodeTorrentWithString ()
+        {
+            var dict = new BEncodedDictionary {
+                { "info", (BEncodedString) "value" }
+            };
+
+            var result = BEncodedDictionary.DecodeTorrent (dict.Encode ());
+            Assert.IsTrue (Toolbox.ByteMatch (dict.Encode (), result.Encode ()));
+        }
+
     }
 }
