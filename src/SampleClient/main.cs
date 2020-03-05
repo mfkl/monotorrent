@@ -1,15 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
+using LibVLCSharp.Shared;
 using MonoTorrent;
 using MonoTorrent.BEncoding;
 using MonoTorrent.Client;
 using MonoTorrent.Dht;
+using MonoTorrent.Streaming;
 
 namespace SampleClient
 {
@@ -23,6 +25,8 @@ namespace SampleClient
         static ClientEngine engine;				// The engine used for downloading
         static List<TorrentManager> torrents;	// The list where all the torrentManagers will be stored that the engine gives us
         static Top10Listener listener;			// This is a subclass of TraceListener which remembers the last 20 statements sent to it
+        static LibVLC libvlc;
+        static MediaPlayer mediaPlayer;
 
         static void Main (string[] args)
         {
@@ -124,6 +128,16 @@ namespace SampleClient
                     // Store the torrent manager in our list so we can access it later
                     torrents.Add (manager);
                     manager.PeersFound += manager_PeersFound;
+
+                    var streamProvider = new StreamProvider (manager);
+                    var stream = await streamProvider.CreateStreamAsync (manager.Torrent.Files.First());
+
+                    Core.Initialize ();
+
+                    libvlc = new LibVLC ();
+                    mediaPlayer = new MediaPlayer(libvlc) {
+                        Media = new Media (libvlc, stream)
+                    };
                 }
             }
 
@@ -168,6 +182,8 @@ namespace SampleClient
                 // Start the torrentmanager. The file will then hash (if required) and begin downloading/seeding
                 await manager.StartAsync ();
             }
+
+            mediaPlayer.Play ();
 
             // While the torrents are still running, print out some stats to the screen.
             // Details for all the loaded torrent managers are shown.
